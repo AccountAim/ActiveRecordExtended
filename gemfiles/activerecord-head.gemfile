@@ -10,3 +10,4 @@ git "https://github.com/rails/rails.git" do
 end
 
 gem "pg", "< 2.0"
+gem "sqlite3"

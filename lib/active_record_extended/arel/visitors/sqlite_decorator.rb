@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
-require "arel/visitors/postgresql"
+require "arel/visitors/sqlite"
 
 module ActiveRecordExtended
   module Visitors
-    module PostgreSQLDecorator
+    module SQLiteDecorator
       private
 
       # rubocop:disable Naming/MethodName
+
+      # TODO: remove PG specific methods
 
       unless ActiveRecordExtended::AR_VERSION_GTE_6_1
         def visit_Arel_Nodes_Overlaps(object, collector)
@@ -114,8 +116,20 @@ module ActiveRecordExtended
         infix_value object, collector, " && "
       end
 
-      def visit_Arel_Nodes_Quoted(object, collector)
-        collector << PG::Connection.quote_ident(object.value.to_s)
+      def visit_Arel_Nodes_Except(o, collector)
+        infix_value(o, collector, " EXCEPT ")
+      end
+
+      def visit_Arel_Nodes_Union(o, collector)
+        infix_value(o, collector, " UNION ")
+      end
+
+      def visit_Arel_Nodes_UnionAll(o, collector)
+        infix_value(o, collector, " UNION ALL ")
+      end
+
+      def visit_Arel_Nodes_Intersect(o, collector)
+        infix_value(o, collector, " INTERSECT ")
       end
 
       def matchable_column?(col, object)
@@ -127,4 +141,4 @@ module ActiveRecordExtended
   end
 end
 
-Arel::Visitors::PostgreSQL.prepend(ActiveRecordExtended::Visitors::PostgreSQLDecorator)
+Arel::Visitors::SQLite.prepend(ActiveRecordExtended::Visitors::SQLiteDecorator)

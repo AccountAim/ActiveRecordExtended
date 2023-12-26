@@ -59,11 +59,17 @@ jobs:
         env:
           DATABASE_NAME: active_record_extended_test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/active_record_extended_test
+          DATABASE_FILE: db/test_db.sqlite
         run: |
-          bundle exec rake db:setup
+          bundle exec rake db:pg:setup db:sqlite:setup
 
-      - name: Run tests
+      - name: Run Postgres tests
         env:
           DATABASE_NAME: active_record_extended_test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/active_record_extended_test
+        run: bundle exec rake
+
+      - name: Run SQLite tests
+        env:
+          DATABASE_FILE: db/test_db.sqlite
         run: bundle exec rake

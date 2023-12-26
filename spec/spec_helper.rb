@@ -5,13 +5,22 @@ SimpleCov.start
 
 require "active_record_extended"
 require "rspec-sqlimit"
+require 'pry'
+require 'pry-byebug'
 
 unless ENV["DATABASE_URL"]
   require "dotenv"
   Dotenv.load
 end
 
-ActiveRecord::Base.establish_connection(ENV["DATABASE_URL"])
+if ENV["DATABASE_FILE"]
+  ActiveRecord::Base.establish_connection({
+    adapter: 'sqlite3',
+    database: ENV["DATABASE_FILE"]
+  })
+else
+  ActiveRecord::Base.establish_connection(ENV["DATABASE_URL"])
+end
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require File.expand_path(f) }
 Dir["#{File.dirname(__FILE__)}/**/*examples.rb"].each { |f| require f }

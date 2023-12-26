@@ -116,7 +116,7 @@ module ActiveRecordExtended
         when "*", /((^".+"$)|(^[[:alpha:]]+\.[[:alnum:]]+)|\(.+\))/
           value
         else
-          PG::Connection.quote_ident(value.to_s)
+          Arel::Nodes::Quoted.new(value.to_s).to_sql
         end
       end
 

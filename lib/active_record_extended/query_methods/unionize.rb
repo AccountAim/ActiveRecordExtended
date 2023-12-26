@@ -59,6 +59,7 @@ module ActiveRecordExtended
         protected
 
         def append_union_order!(union_type, args)
+          args = args.map { |arg| arg.reorder(nil) } if args.first.connection.adapter_name.eql? 'SQLite'
           args.each { |arg| pipe_cte_with!(arg) }
           flatten_scopes       = flatten_to_sql(args)
           @scope.union_values += flatten_scopes
@@ -237,7 +238,7 @@ module ActiveRecordExtended
       def resolve_relation_node(relation_node)
         case relation_node
         when String
-          Arel::Nodes::Grouping.new(Arel.sql(relation_node))
+          ::Arel.sql(relation_node)
         else
           relation_node.arel
         end

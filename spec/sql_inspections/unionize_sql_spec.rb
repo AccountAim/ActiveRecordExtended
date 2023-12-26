@@ -7,7 +7,7 @@ RSpec.describe "Union SQL Queries" do
   let(:other_user) { User.where("id = 2") }
 
   shared_examples_for "unions" do
-    it { is_expected.to eq("( (#{user.to_sql}) #{described_union} (#{other_user.to_sql}) )") }
+    it { is_expected.to eq("#{user.to_sql} #{described_union} #{other_user.to_sql}") }
   end
 
   shared_examples_for "piping nest CTE tables" do
@@ -81,7 +81,7 @@ RSpec.describe "Union SQL Queries" do
       end
 
       it "aliases the union from clause to 'happy_users'" do
-        expect(described_method).to match_regex(/FROM \(+.+\) UNION \(.+\)+ happy_users$/)
+        expect(described_method).to match_regex(/FROM .+ UNION .+ happy_users$/)
         expect(described_method).to match_regex(/^SELECT (happy_users\.id|"happy_users"\."id") FROM.+happy_users$/)
       end
     end
@@ -90,7 +90,7 @@ RSpec.describe "Union SQL Queries" do
       subject(:described_method) { User.select(:id).union(user, other_user).to_sql }
 
       it "retains the actual class calling table name as the union alias" do
-        expect(described_method).to match_regex(/FROM \(+.+\) UNION \(.+\)+ users$/)
+        expect(described_method).to match_regex(/FROM .+ UNION .+ users$/)
         expect(described_method).to match_regex(/^SELECT "users"\."id" FROM.+users$/)
       end
     end
@@ -101,7 +101,7 @@ RSpec.describe "Union SQL Queries" do
       subject(:described_method) { User.union(user, other_user).union.order(:id, name: :desc).to_union_sql }
 
       it "appends an 'ORDER BY' to the end of the union statements" do
-        expect(described_method).to match_regex(/^\(+.+\) UNION \(.+\) \) ORDER BY id, name DESC$/)
+        expect(described_method).to match_regex(/^.+ UNION .+\) ORDER BY id, name DESC$/)
       end
     end
 
@@ -109,7 +109,7 @@ RSpec.describe "Union SQL Queries" do
       subject(:described_method) { User.union(user, other_user).union.order(:id, name: :desc).to_sql }
 
       it "appends an 'ORDER BY' to the end of the union statements" do
-        expect(described_method).to match_regex(/FROM \(+.+\) UNION \(.+\) \) ORDER BY id, name DESC\) users$/)
+        expect(described_method).to match_regex(/FROM .+ UNION .+\) ORDER BY id, name DESC\) users$/)
       end
     end
 

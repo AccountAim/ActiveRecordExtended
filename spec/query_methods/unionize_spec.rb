@@ -18,7 +18,7 @@ RSpec.describe "Active Record Union Methods" do
 
     it "raises an error if the select statements do not align" do
       expect { misaligned_cmd.to_a }.to(
-        raise_error(ActiveRecord::StatementInvalid, /each [[:alpha:]]+ query must have the same number of columns/)
+        raise_error(ActiveRecord::StatementInvalid, /have the same number of (?:result )?columns/)
       )
     end
 

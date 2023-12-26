@@ -19,3 +19,7 @@
 coverage
 
 .runner*.rb
+
+gemfiles/vendor
+gemfiles/*.gemfile.lock
+db/

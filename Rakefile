@@ -32,109 +32,146 @@ task :setup do
 end
 
 # rubocop:disable Metrics/BlockLength
-
 namespace :db do
-  desc "Loads the test database ENV file"
-  task :load_db_settings do
-    require "active_record"
-    unless ENV["DATABASE_URL"]
-      require "dotenv"
-      Dotenv.load
+  namespace :pg do
+    desc "Loads the test database ENV file"
+    task :load_db_settings do
+      require "active_record"
+      unless ENV["DATABASE_URL"]
+        require "dotenv"
+        Dotenv.load
+      end
+    end
+
+    desc "Drop test database"
+    task drop: :load_db_settings do
+      db_config = if ActiveRecord.version > Gem::Version.new("6.1")
+        ActiveRecord::Base.configurations.resolve ENV["DATABASE_URL"]
+      else
+        ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+      end
+
+      ActiveRecord::Tasks::PostgreSQLDatabaseTasks.new(db_config).drop
+    end
+
+    desc "Create test database"
+    task create: :load_db_settings do
+      db_config = if ActiveRecord.version > Gem::Version.new("6.1")
+        ActiveRecord::Base.configurations.resolve ENV["DATABASE_URL"]
+      else
+        ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+      end
+
+      ActiveRecord::Tasks::PostgreSQLDatabaseTasks.new(db_config).create
+    end
+
+    desc "Migrate schema to the test database"
+    task migrate: :load_db_settings do
+      ActiveRecord::Base.establish_connection(ENV["DATABASE_URL"])
+
+      ActiveRecord::Schema.define do
+        enable_extension "hstore"
+
+        create_table :users, force: true do |t|
+          t.integer  "tag_ids", array: true
+          t.string   "name"
+          t.string   "tags",         array: true
+          t.integer  "number",       default: 0
+          t.integer  "personal_id"
+          t.hstore   "data"
+          t.jsonb    "jsonb_data"
+          t.inet     "ip"
+          t.cidr     "subnet"
+          t.datetime "created_at"
+          t.datetime "updated_at"
+        end
+
+        create_table :sti_records, force: true do |t|
+          t.string "type", default: "StiRecord"
+        end
+
+        create_table :namespaced_records, force: true do |t|
+          t.inet "ip"
+          t.cidr "subnet"
+        end
+
+        create_table :tags, force: true do |t|
+          t.belongs_to :user, index: true, foreign_key: true
+          t.integer :tag_number, default: 0
+        end
+
+        create_table :profile_ls, force: true do |t|
+          t.belongs_to :user, index: true, foreign_key: true
+          t.integer :likes
+        end
+
+        create_table :profile_rs, force: true do |t|
+          t.belongs_to :user, index: true, foreign_key: true
+          t.integer :dislikes
+        end
+
+        create_table :version_controls, force: true do |t|
+          t.references :versionable, polymorphic: true, index: true, null: false
+          t.jsonb :source, default: {}, null: false
+        end
+
+        create_table :groups, force: true
+
+        create_table :groups_users, force: true do |t|
+          t.belongs_to :user, index: true, foreign_key: true
+          t.belongs_to :group, index: true, foreign_key: true
+        end
+      end
+
+      puts "Database migrated"
+    end
+
+    desc "Creates and migrates the schema to the test database"
+    task setup: :load_db_settings do
+      unless ENV["DATABASE_URL"]
+        Rake::Task["setup"].invoke
+        Dotenv.load
+      end
+
+      Rake::Task["db:pg:create"].invoke
+      Rake::Task["db:pg:migrate"].invoke
     end
   end
 
-  desc "Drop test database"
-  task drop: :load_db_settings do
-    db_config = if ActiveRecord.version > Gem::Version.new("6.1")
-      ActiveRecord::Base.configurations.resolve ENV["DATABASE_URL"]
-    else
-      ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+  namespace :sqlite do
+    desc "Migrate schema to the test database"
+    task :migrate do
+      require "active_record"
+      ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ENV["DATABASE_FILE"]
+
+      ActiveRecord::Schema.define do
+        create_table :users, force: true do |t|
+          t.integer  "tag_ids", array: true
+          t.string   "name"
+          t.string   "tags",         array: true
+          t.integer  "number",       default: 0
+          t.integer  "personal_id"
+          t.datetime "created_at"
+          t.datetime "updated_at"
+        end
+      end
+
+      puts "Database migrated"
     end
 
-    ActiveRecord::Tasks::PostgreSQLDatabaseTasks.new(db_config).drop
-  end
-
-  desc "Create test database"
-  task create: :load_db_settings do
-    db_config = if ActiveRecord.version > Gem::Version.new("6.1")
-      ActiveRecord::Base.configurations.resolve ENV["DATABASE_URL"]
-    else
-      ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+    desc "Creates and migrates the schema to the test database"
+    task :setup do
+      Rake::Task["db:migrate"].invoke
     end
-
-    ActiveRecord::Tasks::PostgreSQLDatabaseTasks.new(db_config).create
-  end
-
-  desc "Migrate schema to the test database"
-  task migrate: :load_db_settings do
-    ActiveRecord::Base.establish_connection(ENV["DATABASE_URL"])
-
-    ActiveRecord::Schema.define do
-      enable_extension "hstore"
-
-      create_table :users, force: true do |t|
-        t.integer  "tag_ids", array: true
-        t.string   "name"
-        t.string   "tags",         array: true
-        t.integer  "number",       default: 0
-        t.integer  "personal_id"
-        t.hstore   "data"
-        t.jsonb    "jsonb_data"
-        t.inet     "ip"
-        t.cidr     "subnet"
-        t.datetime "created_at"
-        t.datetime "updated_at"
-      end
-
-      create_table :sti_records, force: true do |t|
-        t.string "type", default: "StiRecord"
-      end
-
-      create_table :namespaced_records, force: true do |t|
-        t.inet "ip"
-        t.cidr "subnet"
-      end
-
-      create_table :tags, force: true do |t|
-        t.belongs_to :user, index: true, foreign_key: true
-        t.integer :tag_number, default: 0
-      end
-
-      create_table :profile_ls, force: true do |t|
-        t.belongs_to :user, index: true, foreign_key: true
-        t.integer :likes
-      end
-
-      create_table :profile_rs, force: true do |t|
-        t.belongs_to :user, index: true, foreign_key: true
-        t.integer :dislikes
-      end
-
-      create_table :version_controls, force: true do |t|
-        t.references :versionable, polymorphic: true, index: true, null: false
-        t.jsonb :source, default: {}, null: false
-      end
-
-      create_table :groups, force: true
-
-      create_table :groups_users, force: true do |t|
-        t.belongs_to :user, index: true, foreign_key: true
-        t.belongs_to :group, index: true, foreign_key: true
-      end
-    end
-
-    puts "Database migrated"
   end
 
   desc "Creates and migrates the schema to the test database"
-  task setup: :load_db_settings do
-    unless ENV["DATABASE_URL"]
-      Rake::Task["setup"].invoke
-      Dotenv.load
+  task :setup do
+    if ENV["DATABASE_FILE"]
+      Rake::Task["db:sqlite:migrate"].invoke
+    else
+      Rake::Task["db:pg:setup"].invoke
     end
-
-    Rake::Task["db:create"].invoke
-    Rake::Task["db:migrate"].invoke
   end
 end
 

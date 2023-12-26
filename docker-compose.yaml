@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+  dev:
+    build:
+      context: .
+      args:
+        rails_env: development
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_NAME=test
+      # - DATABASE_URL=postgres://postgres:postgres@postgres:5432/test
+      - DATABASE_FILE=db/test_db.sqlite
+      - DATABASE_CLEANER_ALLOW_REMOTE_DATABASE_URL=true
+    volumes:
+      - .:/home/rails/app
+    user: 1000:1000
+    tty: true
+    stdin_open: true
