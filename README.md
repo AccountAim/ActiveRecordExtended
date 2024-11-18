@@ -52,12 +52,12 @@ Active Record Extended is essentially providing users with the other half of Pos
 ## Compatibility
 
 This package is designed align and work with any officially supported Ruby and Rails versions.
- - Minimum Ruby Version: 3.0.x **(EOL warning!)**
- - Minimum Rails Version: 6.0.x **(EOL warning!)**
+ - Minimum Ruby Version: 3.1.x **(EOL warning!)**
+ - Minimum Rails Version: 6.1.x **(EOL warning!)**
  - Minimum Postgres Version: 12.x **(EOL warning!)**
- - Latest Ruby supported: 3.2.x
+ - Latest Ruby supported: 3.3.x
  - Latest Rails supported: 7.1.x
- - Postgres: 11-current(15) (probably works with most older versions to a certain point)
+ - Postgres: 11-current(16) (probably works with most older versions to a certain point)
 
 ## Installation
 
@@ -560,7 +560,7 @@ As a means for taking complex  query logic and transform them into a single or m
 
 **Options:**
    - `as`: [Symbol or String] (defaults to `"results"`): What the column will be aliased to
-   - `value`: [Symbol or String] (defaults to `key` argument): How the response should handel the json value return
+   - `value`: [Symbol or String] (defaults to `key` argument): How the response should handle the json value return
 
 See the included example on [Row To JSON](#row-to-json) to see it in action.
 
@@ -606,7 +606,7 @@ There's an issue with providing a single union clause and chaining it with a dif
 This is due to requirements of grouping SQL statements. The issue is being working on, but with no ETA.
 
 This issue only applies to the first initial set of unions and is recommended that you union two relations right off the bat.
-Afterwords you can union/chain single relations.
+Afterwards you can union/chain single relations.
 
 Example
 

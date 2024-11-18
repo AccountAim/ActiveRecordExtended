@@ -1,8 +1,17 @@
-# 3.x.x - Unreleased
+# 3.3.0 - July 22nd 2024
+
+### Breaking Changes
+
+- Deprecated Ruby 3.0 support
+  - New minimum Ruby version is 3.1 
+- Deprecated Rails 6.0 support
+  - New minimum Rails version is 6.1
 
 ### Bugfixes
 
 - Implement Rails 7.1 CTE join compatibility
+- [#91](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/91) Help address SystemStackError for infinite loops caused by CTE construction (garrettblehm)
+- [#104](https://github.com/GeorgeKaraszi/ActiveRecordExtended/pull/104) Allow for Rails 7.2 to be used with this gem (Paul-Bob)
 
 
 # 3.2.1 - February 17th 2023
@@ -144,11 +153,11 @@ Overall Examples:
 # 1.2.0 - August 11th 2019
 
 ## Changes
-- Introduce `.foster_select` a helper for select statements that can handel aliasing and provides casting options for many common aggregate functions.
+- Introduce `.foster_select` a helper for select statements that can handle aliasing and provides casting options for many common aggregate functions.
 Supports any aggregate that does not require multiple arguments (`COUNT`, `AVG`, `MAX`, `ARRAY_AGG`, etc..): [Aggregate Functions](https://www.postgresql.org/docs/current/functions-aggregate.html)
   - Supports Aggregate `DISTINCT` and `ORDER BY` inner expressions.
 - Reduced the code foot-print for declaring new Arel functions
-- Introduce new `Arel::Nodes::AggregateFunctionName` for dealing with inline-ing `ORDER BY` (will be expanded to handel `FILTER` next)
+- Introduce new `Arel::Nodes::AggregateFunctionName` for dealing with inline-ing `ORDER BY` (will be expanded to handle `FILTER` next)
 - Code cleanup and some minor performance tweaks
 
 ##### Changes to `.select_row_to_json`
@@ -187,7 +196,7 @@ Add support for Postgres Union types and refactor Arel building process into a s
   - or `.union.as`
 - `order_union` (ORDER BY)
   - or `.union.order`
-- `.reorder_union` (overides previously set `.order_union`)
+- `.reorder_union` (overrides previously set `.order_union`)
   - or `union.reorder`
   
 ## JSON Query Commands
@@ -199,7 +208,7 @@ Add support for Postgres Union types and refactor Arel building process into a s
 
 # 0.7.0 - September 22nd 2018
 
-Add support for Postgres Commend Table Expression (CTE) methods.
+Add support for Postgres Common Table Expression (CTE) methods.
 
 - `.with/1`
 - `.with.recursive/1`
@@ -282,7 +291,7 @@ Added ActiveRecord Where Chain Functionality:
 
 Major thanks to [Dan McClain author of Postgres Ext](https://github.com/dockyard/postgres_ext)
 
-Added ActiveRecord Base Extentions
+Added ActiveRecord Base Extensions
 - .either_order/2
 - .either_join/2
 
